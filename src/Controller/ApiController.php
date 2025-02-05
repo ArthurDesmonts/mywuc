@@ -12,7 +12,7 @@ class ApiController extends AbstractController
     public function test(): JsonResponse
     {
         return $this->json([
-            'message' => 'Hello depuis Symfony !'
+            'message' => 'Hello depuis Symfony !',
         ]);
     }
 }
