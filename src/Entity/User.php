@@ -16,17 +16,17 @@ class User
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $name = null;
+    #[ORM\Column(length: 255)]
+    private ?string $name = '';
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $firstName = null;
+    private ?string $firstName = '';
 
     #[ORM\Column(length: 255)]
-    private ?string $mail = null;
+    private ?string $mail = '';
 
     #[ORM\Column(length: 12)]
-    private ?string $phone = null;
+    private ?string $phone = '';
 
     #[ORM\OneToOne(targetEntity: Wallet::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'wallet_id', referencedColumnName: 'id')]
