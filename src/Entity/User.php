@@ -28,7 +28,7 @@ class User
     #[ORM\Column(length: 12)]
     private ?string $phone = '';
 
-    #[ORM\OneToOne(targetEntity: Wallet::class, cascade: ['persist'])]
+    #[ORM\OneToOne(targetEntity: Wallet::class, cascade: ['remove'])]
     #[ORM\JoinColumn(name: 'wallet_id', referencedColumnName: 'id')]
     private ?Wallet $wallet = null;
 

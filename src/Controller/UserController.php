@@ -69,6 +69,21 @@ final class UserController extends AbstractController
         ], 201);
     }
 
+    #[Route('api/delete_user/{id}', name: 'delete_user', methods: ['DELETE'])]
+    public function deleteUser(int $id, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $user = $entityManager->getRepository(User::class)->find($id);
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'user does not exist'], 404);
+        }
+
+        $entityManager->remove($user);
+        $entityManager->flush();
+
+        return new JsonResponse(['status' => 'User as been correctly removed from DataBase'], 201);
+    }
+
     #[Route('/api/user/{id}', name: 'get_user', methods: ['GET'])]
     public function getUserFromRepository(int $id, EntityManagerInterface $entityManager): JsonResponse
     {

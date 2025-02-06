@@ -17,8 +17,8 @@ class Transaction
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Wallet::class, inversedBy: 'transactions')]
-    #[ORM\JoinColumn(name: 'wallet_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Wallet::class)]
+    #[ORM\JoinColumn(name: 'wallet_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private ?Wallet $wallet = null;
 
     #[ORM\Column]
