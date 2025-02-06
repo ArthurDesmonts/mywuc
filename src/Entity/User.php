@@ -28,8 +28,9 @@ class User
     #[ORM\Column(length: 12)]
     private ?string $phone = null;
 
-    #[ORM\Column]
-    private ?int $walletID = null;
+    #[ORM\OneToOne(targetEntity: Wallet::class, cascade: ['persist'])]
+    #[ORM\JoinColumn(name: 'wallet_id', referencedColumnName: 'id')]
+    private ?Wallet $wallet = null;
 
     public function getId(): ?int
     {
@@ -84,14 +85,14 @@ class User
         return $this;
     }
 
-    public function getWalletID(): ?int
+    public function getWallet(): ?Wallet
     {
-        return $this->walletID;
+        return $this->wallet;
     }
 
-    public function setWalletID(int $walletID): static
+    public function setWallet(Wallet $wallet): self
     {
-        $this->walletID = $walletID;
+        $this->wallet = $wallet;
 
         return $this;
     }
