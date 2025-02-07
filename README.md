@@ -1,5 +1,13 @@
+# **Mywuc: A wallet expenses viewer/controller**
+## The objective of this app:
 
-Class Diagram :
+The objective of Mywic is to control your income better than your traditional bank app. I hope this is going to permit you to have a better vision of your money flows and permit you to invest where it counts the most.
+
+## **Follow the development of the project through this chart**:
+
+### [Trello-Febuary-Project](https://trello.com/b/utFHUF44/projet-de-fevrier)
+
+### <ins>This is the class diagram followed for the entities:</ins>
 
 ```mermaid
 classDiagram
