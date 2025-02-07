@@ -32,7 +32,7 @@ final class UserController extends AbstractController
                     'id' => $user->getWallet()->getId(),
                     'sold' => $user->getWallet()->getSold(),
                 ],
-                'passWordHash' => $user->getPassword(),
+                'password' => $user->getPassword(),
             ];
         }
 
@@ -103,12 +103,13 @@ final class UserController extends AbstractController
             'id' => $user->getId(),
             'name' => $user->getName(),
             'mail' => $user->getMail(),
+            'password' => $user->getPassword(),
             'phone' => $user->getPhone(),
             'wallet' => [
                 'id' => $user->getWallet()->getId(),
                 'sold' => $user->getWallet()->getSold(),
             ],
-            'passWordHash' => $user->getPassword(),
+            'Transactions' => $user->getWallet()->getTransactions(),
         ];
 
         return new JsonResponse($data, 200);

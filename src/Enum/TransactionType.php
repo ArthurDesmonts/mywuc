@@ -4,6 +4,6 @@ namespace App\Enum;
 
 enum TransactionType: string
 {
-    public const DEBIT = 'DEBIT';
-    public const CREDIT = 'CREDIT';
+    case DEPOSIT = 'DEBIT';
+    case WITHDRAWAL = 'CREDIT';
 }

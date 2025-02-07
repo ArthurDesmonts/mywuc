@@ -30,6 +30,11 @@ class Transaction
     #[ORM\Column(type: 'string', enumType: TransactionType::class)]
     private TransactionType $type;
 
+    public function __construct()
+    {
+        $this->date = new \DateTime();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
