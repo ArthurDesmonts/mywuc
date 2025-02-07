@@ -5,30 +5,35 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ApiResource]
-class User
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $name = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $firstName = null;
+    #[ORM\Column(type: 'string')]
+    private ?string $password = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $mail = null;
+    private ?string $name = '';
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $firstName = '';
+
+    #[ORM\Column(length: 255)]
+    private ?string $mail = '';
 
     #[ORM\Column(length: 12)]
-    private ?string $phone = null;
+    private ?string $phone = '';
 
-    #[ORM\OneToOne(targetEntity: Wallet::class, cascade: ['persist'])]
+    #[ORM\OneToOne(targetEntity: Wallet::class, cascade: ['remove'])]
     #[ORM\JoinColumn(name: 'wallet_id', referencedColumnName: 'id')]
     private ?Wallet $wallet = null;
 
@@ -95,5 +100,31 @@ class User
         $this->wallet = $wallet;
 
         return $this;
+    }
+
+    public function getPassword(): ?string
+    {
+        return $this->password;
+    }
+
+    public function setPassword(string $password): static
+    {
+        $this->password = $password;
+
+        return $this;
+    }
+
+    public function eraseCredentials(): void
+    {
+    }
+
+    public function getRoles(): array
+    {
+        return ['ROLE_USER'];
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->mail; // ou username
     }
 }

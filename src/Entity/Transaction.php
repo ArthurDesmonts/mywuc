@@ -17,8 +17,8 @@ class Transaction
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Wallet::class, inversedBy: 'transactions')]
-    #[ORM\JoinColumn(name: 'wallet_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Wallet::class)]
+    #[ORM\JoinColumn(name: 'wallet_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private ?Wallet $wallet = null;
 
     #[ORM\Column]
@@ -29,6 +29,11 @@ class Transaction
 
     #[ORM\Column(type: 'string', enumType: TransactionType::class)]
     private TransactionType $type;
+
+    public function __construct()
+    {
+        $this->date = new \DateTime();
+    }
 
     public function getId(): ?int
     {
