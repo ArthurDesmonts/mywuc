@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class UserController extends AbstractController
@@ -31,6 +32,7 @@ final class UserController extends AbstractController
                     'id' => $user->getWallet()->getId(),
                     'sold' => $user->getWallet()->getSold(),
                 ],
+                'passWordHash' => $user->getPassword(),
             ];
         }
 
@@ -38,7 +40,7 @@ final class UserController extends AbstractController
     }
 
     #[Route('/api/create_user', name: 'create_user', methods: ['POST'])]
-    public function createUser(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    public function createUser(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): JsonResponse
     {
         // Data from the request
         $data = json_decode($request->getContent(), true);
@@ -52,6 +54,10 @@ final class UserController extends AbstractController
         $user->setName($data['name']);
         $user->setMail($data['mail']);
         $user->setPhone($data['phone']);
+
+        // Hash password
+        $hashedPassword = $passwordHasher->hashPassword($user, $data['password']);
+        $user->setPassword($hashedPassword);
 
         // Create Wallet
         $wallet = new Wallet();
@@ -102,6 +108,7 @@ final class UserController extends AbstractController
                 'id' => $user->getWallet()->getId(),
                 'sold' => $user->getWallet()->getSold(),
             ],
+            'passWordHash' => $user->getPassword(),
         ];
 
         return new JsonResponse($data, 200);
@@ -122,6 +129,10 @@ final class UserController extends AbstractController
 
         if (!isset($data['phone'])) {
             return new JsonResponse(['error' => 'Phone is required'], 400);
+        }
+
+        if (!isset($data['password'])) {
+            return new JsonResponse(['error' => 'Password is required'], 400);
         }
 
         return null;
