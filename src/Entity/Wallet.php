@@ -4,7 +4,6 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\WalletRepository;
-use App\Entity\Transaction;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -42,6 +41,7 @@ class Wallet
     public function setSold(float $sold): static
     {
         $this->sold = $sold;
+
         return $this;
     }
 
@@ -51,6 +51,23 @@ class Wallet
     public function getTransactions(): Collection
     {
         return $this->transactions;
+    }
+
+    public function getTransactionsToArray(): array
+    {
+        $transactions = $this->transactions;
+        $arrayOfTransactions = [];
+
+        foreach ($transactions as $transaction) {
+            $arrayOfTransactions[] = [
+                'id' => $transaction->getId(),
+                'amount' => $transaction->getAmount(),
+                'date' => $transaction->getDate()->format('Y-m-d H:i:s'),
+                'type' => $transaction->getType(),
+            ];
+        }
+
+        return $arrayOfTransactions;
     }
 
     public function addTransaction(Transaction $transaction): static

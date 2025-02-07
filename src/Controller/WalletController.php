@@ -3,14 +3,13 @@
 namespace App\Controller;
 
 use App\Entity\Transaction;
-use App\Entity\User;
 use App\Entity\Wallet;
+use App\Enum\TransactionType;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use App\Enum\TransactionType;
 
 final class WalletController extends AbstractController
 {
@@ -23,18 +22,7 @@ final class WalletController extends AbstractController
             return new JsonResponse(['error' => 'Wallet not found'], 404);
         }
 
-        $transactions = $wallet->getTransactions();
-
-        $arrayOfTransactions = [];
-
-        foreach ($transactions as $transaction) {
-            $arrayOfTransactions[] = [
-                'id' => $transaction->getId(),
-                'amount' => $transaction->getAmount(),
-                'date' => $transaction->getDate()->format('Y-m-d H:i:s'),
-                'type' => $transaction->getType(),
-            ];
-        }
+        $arrayOfTransactions = $wallet->getTransactionsToArray();
 
         $jsonResponse = [
             'id' => $wallet->getId(),
