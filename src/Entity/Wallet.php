@@ -7,8 +7,6 @@ use App\Repository\WalletRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Exception;
-use PhpParser\Node\Expr\Throw_;
 
 #[ORM\Entity(repositoryClass: WalletRepository::class)]
 #[ApiResource]
@@ -57,9 +55,10 @@ class Wallet
 
     public function getTransactionsById(int $idTransaction): ?Transaction
     {
-        $transaction = $this->transactions->filter(function($transaction) use ($idTransaction){
+        $transaction = $this->transactions->filter(function ($transaction) use ($idTransaction) {
             return $transaction->getId() == $idTransaction;
         })->first();
+
         return $transaction;
     }
 
@@ -92,16 +91,17 @@ class Wallet
 
     public function removeTransaction(int $idTransaction): static
     {
-        try{
+        try {
             $transaction = $this->getTransactionsById($idTransaction);
             $newAmount = $this->getSold() - $transaction->getAmount();
-            if ($transaction != null){
+            if (null != $transaction) {
                 $this->transactions->removeElement($transaction);
                 $this->setSold($newAmount);
             }
-        }catch(Exception $e){
-            throw new Exception("Transaction not found or not associated with this wallet");
+        } catch (\Exception $e) {
+            throw new \Exception('Transaction not found or not associated with this wallet');
         }
+
         return $this;
     }
 }

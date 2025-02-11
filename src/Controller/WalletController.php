@@ -13,26 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class WalletController extends AbstractController
 {
-    #[Route('/api/wallet/{id}', name: 'app_wallet')]
-    public function getWalletById(int $id, EntityManagerInterface $entityManager): JsonResponse
-    {
-        $wallet = $entityManager->getRepository(Wallet::class)->find($id);
-
-        if (!$wallet) {
-            return new JsonResponse(['error' => 'Wallet not found'], 404);
-        }
-
-        $arrayOfTransactions = $wallet->getTransactionsToArray();
-
-        $jsonResponse = [
-            'id' => $wallet->getId(),
-            'sold' => $wallet->getSold(),
-            'transactions' => $arrayOfTransactions,
-        ];
-
-        return new JsonResponse($jsonResponse, 200);
-    }
-
+    // Crud : CREATE Transaction
     #[Route('api/wallet/transaction/add/{id}', name: 'addTransaction', methods: 'POST')]
     public function addTransaction(int $id, Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
@@ -74,24 +55,46 @@ final class WalletController extends AbstractController
         ], 201);
     }
 
+    // cRud : READ Wallet informations
+    #[Route('/api/wallet/{id}', name: 'app_wallet')]
+    public function getWalletById(int $id, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $wallet = $entityManager->getRepository(Wallet::class)->find($id);
+
+        if (!$wallet) {
+            return new JsonResponse(['error' => 'Wallet not found'], 404);
+        }
+
+        $arrayOfTransactions = $wallet->getTransactionsToArray();
+
+        $jsonResponse = [
+            'id' => $wallet->getId(),
+            'sold' => $wallet->getSold(),
+            'transactions' => $arrayOfTransactions,
+        ];
+
+        return new JsonResponse($jsonResponse, 200);
+    }
+
+    // cruD : DELETE a Transaction from a wallet
     #[Route('api/wallet/transaction/remove/{idWallet}', name: 'remove_transaction', methods: 'DELETE')]
     public function removeTransactionById(int $idWallet, Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
         $wallet = $entityManager->getRepository(Wallet::class)->find($idWallet);
 
-        if(!$wallet){
+        if (!$wallet) {
             return new JsonResponse(['error' => 'Wallet not found'], 404);
         }
 
         $data = json_decode($request->getContent(), true);
 
-        if(!isset($data['idTransaction'])){
+        if (!isset($data['idTransaction'])) {
             return new JsonResponse(['error' => 'No transaction ID received', 404]);
         }
 
         $transaction = $entityManager->getRepository(Transaction::class)->find($data['idTransaction']);
 
-        if(!$transaction){
+        if (!$transaction) {
             return new JsonResponse(['error' => 'Transaction not found'], 404);
         }
 
@@ -108,6 +111,7 @@ final class WalletController extends AbstractController
         if (!isset($data['amount'])) {
             return new JsonResponse(['error' => 'Amount is required'], 400);
         }
+
         return null;
     }
 }
