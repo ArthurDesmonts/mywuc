@@ -33,7 +33,7 @@ final class WalletController extends AbstractController
         return new JsonResponse($jsonResponse, 200);
     }
 
-    #[Route('api/wallet/{id}/addTransaction', name: 'addTransaction', methods: 'POST')]
+    #[Route('api/wallet/transaction/add/{id}', name: 'addTransaction', methods: 'POST')]
     public function addTransaction(int $id, Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -74,12 +74,40 @@ final class WalletController extends AbstractController
         ], 201);
     }
 
+    #[Route('api/wallet/transaction/remove/{idWallet}', name: 'remove_transaction', methods: 'DELETE')]
+    public function removeTransactionById(int $idWallet, Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $wallet = $entityManager->getRepository(Wallet::class)->find($idWallet);
+
+        if(!$wallet){
+            return new JsonResponse(['error' => 'Wallet not found'], 404);
+        }
+
+        $data = json_decode($request->getContent(), true);
+
+        if(!isset($data['idTransaction'])){
+            return new JsonResponse(['error' => 'No transaction ID received', 404]);
+        }
+
+        $transaction = $entityManager->getRepository(Transaction::class)->find($data['idTransaction']);
+
+        if(!$transaction){
+            return new JsonResponse(['error' => 'Transaction not found'], 404);
+        }
+
+        $wallet->removeTransaction($data['idTransaction']);
+
+        $entityManager->persist($wallet);
+        $entityManager->flush();
+
+        return new JsonResponse(['succes' => 'The transaction as been succesfully removed from this wallet'], 201);
+    }
+
     private function requestAddTransactionValidation(array $data): ?JsonResponse
     {
         if (!isset($data['amount'])) {
-            return new JsonResponse(['error' => 'Name is required'], 400);
+            return new JsonResponse(['error' => 'Amount is required'], 400);
         }
-
         return null;
     }
 }
