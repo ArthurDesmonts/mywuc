@@ -52,6 +52,14 @@ final class UserController extends AbstractController
             return $response;
         }
 
+        if (!$this->isAtomicPhoneNumber($data['phone'], $entityManager)) {
+            return new JsonResponse(['error' => 'Phone already associated to an account'], 400);
+        }
+
+        if (!$this->isAtomicMailAdress($data['mail'], $entityManager)) {
+            return new JsonResponse(['error' => 'Mail already associated to an account'], 400);
+        }
+
         // Create User
         $user = new User();
         $user->setName($data['name']);
@@ -117,7 +125,7 @@ final class UserController extends AbstractController
         $dataRequest = json_decode($request->getContent(), true);
 
         if (empty($dataRequest)) {
-            return new JsonResponse(['error' => 'No field specified for update.'], 404);
+            return new JsonResponse(['error' => 'No field specified for update.'], 400);
         }
 
         if (isset($dataRequest['name'])) {
@@ -133,11 +141,19 @@ final class UserController extends AbstractController
         }
 
         if (isset($dataRequest['mail'])) {
-            $user->setMail($dataRequest['mail']);
+            if ($this->isAtomicMailAdress($dataRequest['mail'], $entityManager)) {
+                $user->setMail($dataRequest['mail']);
+            } else {
+                return new JsonResponse(['error' => 'Mail already associated to an account'], 400);
+            }
         }
 
         if (isset($dataRequest['phone'])) {
-            $user->setPhone($dataRequest['phone']);
+            if ($this->isAtomicPhoneNumber($dataRequest['phone'], $entityManager)) {
+                $user->setPhone($dataRequest['phone']);
+            } else {
+                return new JsonResponse(['error' => 'Phone already associated to an account'], 400);
+            }
         }
 
         $entityManager->persist($user);
@@ -168,12 +184,11 @@ final class UserController extends AbstractController
         $entityManager->remove($user);
         $entityManager->flush();
 
-        return new JsonResponse(['status' => 'User as been correctly removed from DataBase'], 201);
+        return new JsonResponse(['status' => 'User as been correctly removed from DataBase'], 200);
     }
 
     // Validate the data sent in the request
     // Check only the presence of the fields
-    // TODO : CHeck data integrity
     private function requestDataValidation(array $data): ?JsonResponse
     {
         if (!isset($data['name'])) {
@@ -195,15 +210,23 @@ final class UserController extends AbstractController
         return null;
     }
 
-    // TODO : Check the atomique values -> phone
-    private function isAtomicPhoneNumber(): ?JsonResponse
+    private function isAtomicPhoneNumber(string $phone, EntityManagerInterface $entityManager): bool
     {
-        return null;
+        $similarPhoneInDB = $entityManager->getRepository(User::class)->findOneBy(['phone' => $phone]);
+        if ($similarPhoneInDB) {
+            return false;
+        }
+
+        return true;
     }
 
-    // TODO : Check the atomique values -> mail
-    private function isAtomicMailAdress(): ?JsonResponse
+    private function isAtomicMailAdress(string $mail, EntityManagerInterface $entityManager): bool
     {
-        return null;
+        $similarMailInDb = $entityManager->getRepository(User::class)->findOneBy(['mail' => $mail]);
+        if ($similarMailInDb) {
+            return false;
+        }
+
+        return true;
     }
 }
