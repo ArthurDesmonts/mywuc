@@ -14,7 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class UserController extends AbstractController
 {
     // TODO : For test phase Must return the user list
-    // TODO : Remove this route
+    // FIXME: Remove this route
     #[Route('/api/user', name: 'app_user')]
     public function index(EntityManagerInterface $entityManager): JsonResponse
     {
@@ -26,6 +26,7 @@ final class UserController extends AbstractController
             $arrayOfUsers[] = [
                 'id' => $user->getId(),
                 'name' => $user->getName(),
+                'firstName' => $user->getFirstName(),
                 'mail' => $user->getMail(),
                 'phone' => $user->getPhone(),
                 'wallet' => [
@@ -40,7 +41,8 @@ final class UserController extends AbstractController
         return new JsonResponse($arrayOfUsers, 200);
     }
 
-    #[Route('/api/create_user', name: 'create_user', methods: ['POST'])]
+    // Crud : CREATE route
+    #[Route('/api/user/create', name: 'create_user', methods: ['POST'])]
     public function createUser(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): JsonResponse
     {
         // Data from the request
@@ -76,21 +78,7 @@ final class UserController extends AbstractController
         ], 201);
     }
 
-    #[Route('api/delete_user/{id}', name: 'delete_user', methods: ['DELETE'])]
-    public function deleteUser(int $id, EntityManagerInterface $entityManager): JsonResponse
-    {
-        $user = $entityManager->getRepository(User::class)->find($id);
-
-        if (!$user) {
-            return new JsonResponse(['error' => 'user does not exist'], 404);
-        }
-
-        $entityManager->remove($user);
-        $entityManager->flush();
-
-        return new JsonResponse(['status' => 'User as been correctly removed from DataBase'], 201);
-    }
-
+    // cRud : Read route
     #[Route('/api/user/{id}', name: 'get_user', methods: ['GET'])]
     public function getUserFromRepository(int $id, EntityManagerInterface $entityManager): JsonResponse
     {
@@ -103,6 +91,7 @@ final class UserController extends AbstractController
         $data = [
             'id' => $user->getId(),
             'name' => $user->getName(),
+            'firstName' => $user->getFirstName(),
             'mail' => $user->getMail(),
             'password' => $user->getPassword(),
             'phone' => $user->getPhone(),
@@ -114,6 +103,72 @@ final class UserController extends AbstractController
         ];
 
         return new JsonResponse($data, 200);
+    }
+
+    // crUd : UPDATE route
+    #[Route('api/user/update/{id}', name: 'update_user', methods: ['PUT'])]
+    public function updateUser(int $id, Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $user = $entityManager->getRepository(User::class)->find($id);
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not found'], 404);
+        }
+
+        $dataRequest = json_decode($request->getContent(), true);
+
+        if (empty($dataRequest)) {
+            return new JsonResponse(['error' => 'No field specified for update.'], 404);
+        }
+
+        if (isset($dataRequest['name'])) {
+            $user->setName($dataRequest['name']);
+        }
+
+        if (isset($dataRequest['firstName'])) {
+            $user->setFirstName($dataRequest['firstName']);
+        }
+
+        if (isset($dataRequest['firstname'])) {
+            $user->setName($dataRequest['name']);
+        }
+
+        if (isset($dataRequest['mail'])) {
+            $user->setMail($dataRequest['mail']);
+        }
+
+        if (isset($dataRequest['phone'])) {
+            $user->setPhone($dataRequest['phone']);
+        }
+
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        $data = [
+            'id' => $user->getId(),
+            'name' => $user->getName(),
+            'firstName' => $user->getFirstName(),
+            'mail' => $user->getMail(),
+            'password' => $user->getPassword(),
+            'phone' => $user->getPhone(),
+        ];
+
+        return new JsonResponse($data, 200);
+    }
+
+    // cruD : DELETE route
+    #[Route('api/user/delete/{id}', name: 'delete_user', methods: ['DELETE'])]
+    public function deleteUser(int $id, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $user = $entityManager->getRepository(User::class)->find($id);
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'user does not exist'], 404);
+        }
+
+        $entityManager->remove($user);
+        $entityManager->flush();
+
+        return new JsonResponse(['status' => 'User as been correctly removed from DataBase'], 201);
     }
 
     // Validate the data sent in the request
@@ -137,6 +192,18 @@ final class UserController extends AbstractController
             return new JsonResponse(['error' => 'Password is required'], 400);
         }
 
+        return null;
+    }
+
+    // TODO : Check the atomique values -> phone
+    private function isAtomicPhoneNumber(): ?JsonResponse
+    {
+        return null;
+    }
+
+    // TODO : Check the atomique values -> mail
+    private function isAtomicMailAdress(): ?JsonResponse
+    {
         return null;
     }
 }
