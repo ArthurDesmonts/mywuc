@@ -187,6 +187,41 @@ final class UserController extends AbstractController
         return new JsonResponse(['status' => 'User as been correctly removed from DataBase'], 200);
     }
 
+    #[Route('api/user/login', name: 'login_user', methods: ['POST'])]
+    public function login(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        if (!isset($data['mail']) || !isset($data['password'])) {
+            return new JsonResponse(['error' => 'Mail and password are required'], 400);
+        }
+
+        $user = $entityManager->getRepository(User::class)->findOneBy(['mail' => $data['mail']]);
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'Mail not found'], 404);
+        }
+
+        if (!$passwordHasher->isPasswordValid($user, $data['password'])) {
+            return new JsonResponse(['error' => 'Invalid password'], 400);
+        }
+
+        $data = [
+            'id' => $user->getId(),
+            'name' => $user->getName(),
+            'firstName' => $user->getFirstName(),
+            'mail' => $user->getMail(),
+            'phone' => $user->getPhone(),
+            'wallet' => [
+                'id' => $user->getWallet()->getId(),
+                'sold' => $user->getWallet()->getSold(),
+            ],
+            'Transactions' => $user->getWallet()->getTransactionsToArray(),
+        ];
+
+        return new JsonResponse($data, 200);
+    }
+
     // Validate the data sent in the request
     // Check only the presence of the fields
     private function requestDataValidation(array $data): ?JsonResponse
