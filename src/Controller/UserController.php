@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Entity\Wallet;
 use Doctrine\ORM\EntityManagerInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -188,7 +189,7 @@ final class UserController extends AbstractController
     }
 
     #[Route('api/user/login', name: 'login_user', methods: ['POST'])]
-    public function login(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): JsonResponse
+    public function login(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordEncoder, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
 
@@ -202,11 +203,14 @@ final class UserController extends AbstractController
             return new JsonResponse(['error' => 'Mail not found'], 404);
         }
 
-        if (!$passwordHasher->isPasswordValid($user, $data['password'])) {
+        if (!$passwordEncoder->isPasswordValid($user, $data['password'])) {
             return new JsonResponse(['error' => 'Invalid password'], 400);
         }
 
-        $data = [
+        // Générer le token JWT
+        $token = $JWTManager->create($user);
+
+        $responseData = [
             'id' => $user->getId(),
             'name' => $user->getName(),
             'firstName' => $user->getFirstName(),
@@ -217,10 +221,12 @@ final class UserController extends AbstractController
                 'sold' => $user->getWallet()->getSold(),
             ],
             'Transactions' => $user->getWallet()->getTransactionsToArray(),
+            'token' => $token, // Ajouter le token à la réponse
         ];
 
-        return new JsonResponse($data, 200);
+        return new JsonResponse($responseData);
     }
+    
 
     // Validate the data sent in the request
     // Check only the presence of the fields
