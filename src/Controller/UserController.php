@@ -87,7 +87,7 @@ final class UserController extends AbstractController
     }
 
     // cRud : Read route
-    #[Route('/api/user/{id}', name: 'get_user', methods: ['GET'])]
+    #[Route('/api/user/get/{id}', name: 'get_user', methods: ['GET'])]
     public function getUserFromRepository(int $id, EntityManagerInterface $entityManager): JsonResponse
     {
         $user = $entityManager->getRepository(User::class)->find($id);
