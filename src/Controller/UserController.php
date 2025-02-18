@@ -64,6 +64,7 @@ final class UserController extends AbstractController
         // Create User
         $user = new User();
         $user->setName($data['name']);
+        $user->setFirstName($data['firstName']);
         $user->setMail($data['mail']);
         $user->setPhone($data['phone']);
 
