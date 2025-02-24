@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 final class UserController extends AbstractController
 {
@@ -104,6 +105,26 @@ final class UserController extends AbstractController
             'firstName' => $user->getFirstName(),
             'mail' => $user->getMail(),
             'password' => $user->getPassword(),
+            'phone' => $user->getPhone(),
+            'wallet' => [
+                'id' => $user->getWallet()->getId(),
+                'sold' => $user->getWallet()->getSold(),
+            ],
+            'Transactions' => $user->getWallet()->getTransactionsToArray(),
+        ];
+
+        return new JsonResponse($data, 200);
+    }
+
+    //route that return the user based on the token received
+    #[Route('/api/user/me', name: 'get_user_me', methods: ['GET'])]
+    public function getUserFromToken(UserInterface $user): JsonResponse
+    {
+        $data = [
+            'id' => $user->getId(),
+            'name' => $user->getName(),
+            'firstName' => $user->getFirstName(),
+            'mail' => $user->getMail(),
             'phone' => $user->getPhone(),
             'wallet' => [
                 'id' => $user->getWallet()->getId(),
