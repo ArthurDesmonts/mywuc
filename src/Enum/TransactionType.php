@@ -4,6 +4,6 @@ namespace App\Enum;
 
 enum TransactionType: string
 {
-    case DEPOSIT = 'DEBIT';
-    case WITHDRAWAL = 'CREDIT';
+    case DEPOSIT = 'CREDIT';
+    case WITHDRAWAL = 'DEBIT';
 }
