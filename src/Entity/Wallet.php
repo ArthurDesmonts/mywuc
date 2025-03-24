@@ -64,7 +64,11 @@ class Wallet
 
     public function getTransactionsToArray(): array
     {
-        $transactions = $this->transactions;
+        $transactions = $this->transactions->toArray();
+        usort($transactions, function ($a, $b) {
+            return $b->getDate() <=> $a->getDate();
+        });
+
         $arrayOfTransactions = [];
 
         foreach ($transactions as $transaction) {
