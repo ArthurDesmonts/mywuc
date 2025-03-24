@@ -32,6 +32,7 @@ final class WalletController extends AbstractController
         // Transaction creation
         $transaction = new Transaction();
         $transaction->setAmount($data['amount']);
+        $transaction->setDate(\DateTime::createFromFormat('d/m/Y', $data['selectedDate']));
         $transaction->setWallet($wallet);
 
         // Set Wallet amount
