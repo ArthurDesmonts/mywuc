@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Validator\Constraints\Length;
 
 final class WalletController extends AbstractController
 {
@@ -105,6 +106,40 @@ final class WalletController extends AbstractController
         $entityManager->flush();
 
         return new JsonResponse(['succes' => 'The transaction as been succesfully removed from this wallet'], 201);
+    }
+
+    #[Route('api/wallet/transaction/debit/month/{idWallet}', name: 'debitPairMonth', methods: 'GET')]
+    public function getDebitPairMonth(int $idWallet, Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $wallet = $entityManager->getRepository(Wallet::class)->find($idWallet);
+
+        if (!$wallet) {
+            return new JsonResponse(['error' => 'No transaction ID received', 404]);
+        }
+
+        $transactions = $wallet->getTransactionsToArray();
+
+        $transactionDebit = [];
+
+        foreach ($transactions as $transaction) {
+            // Comparaison directe avec l'énumération
+            if ($transaction['type'] === TransactionType::WITHDRAWAL) {
+                $transactionDebit[] = $transaction;
+            }
+        }
+
+        $transactionPairMonth =  array_fill(0, 12, 0);
+
+        foreach ($transactionDebit as $transaction) {
+            $monthOfTransaction = (new \DateTime($transaction['date']))->format('m');
+            $transactionPairMonth[ (int) $monthOfTransaction - 1] += $transaction['amount'];
+        }
+
+        $jsonResponse = [
+            'transactions' => $transactionPairMonth,
+        ];
+        
+        return new JsonResponse($jsonResponse, 200);
     }
 
     private function requestAddTransactionValidation(array $data): ?JsonResponse
