@@ -118,12 +118,15 @@ final class WalletController extends AbstractController
         }
 
         $transactions = $wallet->getTransactionsToArray();
-
+        
         $transactionDebit = [];
 
+        $currentYear = (int) (new \DateTime())->format('Y');
+
         foreach ($transactions as $transaction) {
-            // Comparaison directe avec l'énumération
-            if ($transaction['type'] === TransactionType::WITHDRAWAL) {
+            $transactionYear = (int) (new \DateTime($transaction['date']))->format('Y');
+
+            if ($transactionYear === $currentYear &&  $transaction['type'] === TransactionType::WITHDRAWAL) {
                 $transactionDebit[] = $transaction;
             }
         }
