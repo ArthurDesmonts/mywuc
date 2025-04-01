@@ -145,6 +145,43 @@ final class WalletController extends AbstractController
         return new JsonResponse($jsonResponse, 200);
     }
 
+    #[Route('api/wallet/transaction/credit/month/{idWallet}', name: 'creditPairMonth', methods: 'GET')]
+    public function getCreditPairMonth(int $idWallet, Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $wallet = $entityManager->getRepository(Wallet::class)->find($idWallet);
+
+        if (!$wallet) {
+            return new JsonResponse(['error' => 'No transaction ID received', 404]);
+        }
+
+        $transactions = $wallet->getTransactionsToArray();
+        
+        $transactionDebit = [];
+
+        $currentYear = (int) (new \DateTime())->format('Y');
+
+        foreach ($transactions as $transaction) {
+            $transactionYear = (int) (new \DateTime($transaction['date']))->format('Y');
+
+            if ($transactionYear === $currentYear &&  $transaction['type'] === TransactionType::DEPOSIT) {
+                $transactionDebit[] = $transaction;
+            }
+        }
+
+        $transactionPairMonth =  array_fill(0, 12, 0);
+
+        foreach ($transactionDebit as $transaction) {
+            $monthOfTransaction = (new \DateTime($transaction['date']))->format('m');
+            $transactionPairMonth[ (int) $monthOfTransaction - 1] += $transaction['amount'];
+        }
+
+        $jsonResponse = [
+            'transactions' => $transactionPairMonth,
+        ];
+        
+        return new JsonResponse($jsonResponse, 200);
+    }
+
     private function requestAddTransactionValidation(array $data): ?JsonResponse
     {
         if (!isset($data['amount'])) {
