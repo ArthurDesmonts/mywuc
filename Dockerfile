@@ -21,8 +21,15 @@ RUN a2enmod rewrite
 # Set working directory
 WORKDIR /var/www/html
 
+# Install Symfony CLI
+RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | bash && \
+    apt-get install symfony-cli
+
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Set environment variable to allow Composer to run as root
+ENV COMPOSER_ALLOW_SUPERUSER=1
 
 # Copy composer files first
 COPY composer.json composer.lock ./
@@ -34,9 +41,10 @@ RUN composer install --no-dev --no-scripts --no-autoloader
 COPY . .
 
 # Run scripts and generate autoloader
-RUN composer dump-autoload --optimize --no-dev \
-    && composer run-script post-install-cmd --no-dev \
-    && chown -R www-data:www-data var/
+RUN set -e; \
+    composer dump-autoload --optimize --no-dev; \
+    composer run-script post-install-cmd --no-dev; \
+    chown -R www-data:www-data var/
 
 # Apache configuration
 COPY apache.conf /etc/apache2/sites-available/000-default.conf
