@@ -7,11 +7,14 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     libpq-dev \
     zip \
-    libzip-dev
+    libzip-dev \
+    postgresql \
+    postgresql-client
 
 # Install and enable PHP extensions
 RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
-    && docker-php-ext-install \
+    && docker-php-ext-configure zip \
+    && docker-php-ext-install -j$(nproc) \
         pdo \
         pdo_pgsql \
         pgsql \
@@ -28,8 +31,10 @@ WORKDIR /var/www/html
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set environment variable to allow Composer to run as root
+# Set environment variables
 ENV COMPOSER_ALLOW_SUPERUSER=1
+ENV APP_ENV=prod
+ENV DATABASE_URL="postgresql://app:app@database:5432/app?serverVersion=16&charset=utf8"
 
 # Copy composer files and env.prod
 COPY composer.json composer.lock .env.prod ./
@@ -43,12 +48,13 @@ COPY . .
 
 # Create var directory and set permissions
 RUN mkdir -p var && \
-    chown -R www-data:www-data var/
+    chown -R www-data:www-data var/ && \
+    chmod 777 -R var/
 
 # Run scripts and generate autoloader
 RUN set -e; \
     composer dump-autoload --optimize --no-dev; \
-    APP_ENV=prod composer run-script post-install-cmd --no-dev
+    composer run-script post-install-cmd --no-dev
 
 # Apache configuration
 COPY apache.conf /etc/apache2/sites-available/000-default.conf
