@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: mywuc
+    env: docker
+    buildCommand: |
+      composer install --no-dev --optimize-autoloader
+      php bin/console doctrine:migrations:migrate --no-interaction
+      php bin/console lexik:jwt:generate-keypair --no-interaction
+    startCommand: apache2-foreground
+    envVars:
+      - key: APP_ENV
+        value: prod
+      - key: APP_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: postgres-mywuc
+          property: connectionString
+      - key: JWT_SECRET_KEY
+        sync: false
+      - key: JWT_PUBLIC_KEY
+        sync: false
+      - key: JWT_PASSPHRASE
+        sync: false
+      - key: CORS_ALLOW_ORIGIN
+        value: '^https?://.*\.render\.com$'
+    dependencies:
+      - name: postgres-mywuc
+        type: postgresql
