@@ -6,14 +6,18 @@ RUN apt-get update && apt-get install -y \
     unzip \
     libicu-dev \
     libpq-dev \
-    zip
+    zip \
+    libzip-dev
 
-# Install PHP extensions
-RUN docker-php-ext-install \
-    pdo \
-    pdo_pgsql \
-    intl \
-    opcache
+# Install and enable PHP extensions
+RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
+    && docker-php-ext-install \
+        pdo \
+        pdo_pgsql \
+        pgsql \
+        intl \
+        opcache \
+        zip
 
 # Enable Apache modules
 RUN a2enmod rewrite
@@ -44,7 +48,17 @@ RUN mkdir -p var && \
 # Run scripts and generate autoloader
 RUN set -e; \
     composer dump-autoload --optimize --no-dev; \
-    composer run-script post-install-cmd --no-dev
+    APP_ENV=prod composer run-script post-install-cmd --no-dev
 
 # Apache configuration
 COPY apache.conf /etc/apache2/sites-available/000-default.conf
+
+# Set recommended PHP.ini settings
+RUN { \
+    echo 'opcache.memory_consumption=128'; \
+    echo 'opcache.interned_strings_buffer=8'; \
+    echo 'opcache.max_accelerated_files=4000'; \
+    echo 'opcache.revalidate_freq=2'; \
+    echo 'opcache.fast_shutdown=1'; \
+    echo 'opcache.enable_cli=1'; \
+} > /usr/local/etc/php/conf.d/opcache-recommended.ini
