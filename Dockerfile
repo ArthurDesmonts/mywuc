@@ -34,7 +34,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set environment variables
 ENV COMPOSER_ALLOW_SUPERUSER=1
 ENV APP_ENV=prod
-ENV DATABASE_URL="postgresql://app:app@database:5432/app?serverVersion=16&charset=utf8"
+ENV DATABASE_URL="postgresql://dbmywuc_vquu_user:skRzqkwSquNaF0CA6fyFrN3784NdW4qj@dpg-cvp83jqdbo4c73bc65l0-a/dbmywuc_vquu"
 
 # Copy composer files and env.prod
 COPY composer.json composer.lock .env.prod ./
