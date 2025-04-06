@@ -46,13 +46,6 @@ RUN composer install --no-dev --no-scripts --no-autoloader
 # Copy rest of the application
 COPY . .
 
-# Setup JWT
-RUN mkdir -p config/jwt
-COPY config/jwt/private.pem config/jwt/public.pem /var/www/html/config/jwt/
-RUN chmod 644 /var/www/html/config/jwt/public.pem \
-    && chmod 600 /var/www/html/config/jwt/private.pem \
-    && chown -R www-data:www-data /var/www/html/config/jwt/
-
 # Create var directory and set permissions
 RUN mkdir -p var && \
     chown -R www-data:www-data var/ && \
