@@ -4,6 +4,7 @@ services:
     env: docker
     dockerfilePath: ./Dockerfile
     autoDeploy: true
+    rootDir: ./public
     envVars:
       - key: APP_ENV
         value: prod
