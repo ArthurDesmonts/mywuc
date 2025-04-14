@@ -34,26 +34,24 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set environment variables
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
-# Copy composer files and env.prod
-COPY composer.json composer.lock .env.prod ./
-RUN mv .env.prod .env
-
-# Install dependencies with autoloader and scripts
-RUN composer install --no-dev --optimize-autoloader
-
-# Copy rest of the application
+# Copy the whole application
 COPY . .
 
-# JWT copy
-RUN mkdir -p /app/config/jwt && \
-    echo "$JWT_PRIVATE_KEY" > /app/config/jwt/private.pem && \
-    echo "$JWT_PUBLIC_KEY" > /app/config/jwt/public.pem
+# Move env.prod to .env
+RUN mv .env.prod .env
 
-# Create var directory and set permissions
+# Install PHP dependencies
+RUN composer install --no-dev --optimize-autoloader
+
+# Recreate JWT keys from environment variables
+RUN mkdir -p config/jwt && \
+    echo "$JWT_PRIVATE_KEY" > config/jwt/private.pem && \
+    echo "$JWT_PUBLIC_KEY" > config/jwt/public.pem
+
+# Set permissions for var directory
 RUN mkdir -p var && \
     chown -R www-data:www-data var/ && \
-    chmod 777 -R var/
-
+    chmod -R 777 var/
 
 # Apache configuration
 COPY apache.conf /etc/apache2/sites-available/000-default.conf
@@ -67,3 +65,5 @@ RUN { \
     echo 'opcache.fast_shutdown=1'; \
     echo 'opcache.enable_cli=1'; \
 } > /usr/local/etc/php/conf.d/opcache-recommended.ini
+
+RUN php bin/console doctrine:migrations:migrate --no-interaction
