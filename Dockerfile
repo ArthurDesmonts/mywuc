@@ -9,7 +9,9 @@ RUN apt-get update && apt-get install -y \
     zip \
     libzip-dev \
     postgresql \
-    postgresql-client
+    postgresql-client \
+    libonig-dev \
+    zlib1g-dev
 
 # Install and enable PHP extensions
 RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
@@ -20,7 +22,8 @@ RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
         pgsql \
         intl \
         opcache \
-        zip
+        zip \
+        mbstring
 
 # Enable Apache modules
 RUN a2enmod rewrite
@@ -33,22 +36,29 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set environment variables
 ENV COMPOSER_ALLOW_SUPERUSER=1
+ENV APP_ENV=prod
+ENV APP_DEBUG=0
 
-# Copy the whole application
+# Copy application files
 COPY . .
 
-# Move env.prod to .env
+# Move env.prod to .env (important pour que Symfony ait ses variables à temps)
 RUN mv .env.prod .env
 
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader
+# Install PHP dependencies after copying all files
+RUN composer install --no-dev --optimize-autoloader --no-scripts
 
-# Recreate JWT keys from environment variables
+# Generate JWT keys from env vars (important : après composer install)
 RUN mkdir -p config/jwt && \
     echo "$JWT_PRIVATE_KEY" > config/jwt/private.pem && \
     echo "$JWT_PUBLIC_KEY" > config/jwt/public.pem
 
-# Set permissions for var directory
+# Run Symfony scripts manually (composer scripts nécessitent .env et les clés JWT)
+RUN php bin/console cache:clear --env=prod && \
+    php bin/console cache:warmup --env=prod && \
+    php bin/console doctrine:migrations:migrate --no-interaction
+
+# Set permissions
 RUN mkdir -p var && \
     chown -R www-data:www-data var/ && \
     chmod -R 777 var/
@@ -56,7 +66,7 @@ RUN mkdir -p var && \
 # Apache configuration
 COPY apache.conf /etc/apache2/sites-available/000-default.conf
 
-# Set recommended PHP.ini settings
+# PHP recommendations
 RUN { \
     echo 'opcache.memory_consumption=128'; \
     echo 'opcache.interned_strings_buffer=8'; \
@@ -65,5 +75,6 @@ RUN { \
     echo 'opcache.fast_shutdown=1'; \
     echo 'opcache.enable_cli=1'; \
 } > /usr/local/etc/php/conf.d/opcache-recommended.ini
+
 
 RUN php bin/console doctrine:migrations:migrate --no-interaction

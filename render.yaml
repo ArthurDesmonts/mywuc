@@ -2,11 +2,8 @@ services:
   - type: web
     name: mywuc
     env: docker
-    buildCommand: |
-      composer install --no-dev --optimize-autoloader
-      php bin/console doctrine:migrations:migrate --no-interaction
-      php bin/console lexik:jwt:generate-keypair --no-interaction
-    startCommand: apache2-foreground
+    dockerfilePath: ./Dockerfile
+    autoDeploy: true
     envVars:
       - key: APP_ENV
         value: prod

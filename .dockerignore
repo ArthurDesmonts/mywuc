@@ -1,0 +1,10 @@
+.git
+vendor
+node_modules
+tests
+.env.local
+.env.test
+docker-compose.yml
+docker-compose.override.yml
+Dockerfile
+docker-compose.prod.yml
