@@ -38,21 +38,20 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 COPY composer.json composer.lock .env.prod ./
 RUN mv .env.prod .env
 
-# Install dependencies without scripts
-RUN composer install --no-dev --no-scripts --no-autoloader
+# Install dependencies with autoloader and scripts
+RUN composer install --no-dev --optimize-autoloader
 
 # Copy rest of the application
 COPY . .
+
+# JWT copy
+COPY config/jwt/ /app/config/jwt/
 
 # Create var directory and set permissions
 RUN mkdir -p var && \
     chown -R www-data:www-data var/ && \
     chmod 777 -R var/
 
-# Run scripts and generate autoloader
-RUN set -e; \
-    composer dump-autoload --optimize --no-dev; \
-    composer run-script post-install-cmd --no-dev
 
 # Apache configuration
 COPY apache.conf /etc/apache2/sites-available/000-default.conf
