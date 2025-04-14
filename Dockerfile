@@ -45,7 +45,9 @@ RUN composer install --no-dev --optimize-autoloader
 COPY . .
 
 # JWT copy
-COPY config/jwt/ /app/config/jwt/
+RUN mkdir -p /app/config/jwt && \
+    echo "$JWT_PRIVATE_KEY" > /app/config/jwt/private.pem && \
+    echo "$JWT_PUBLIC_KEY" > /app/config/jwt/public.pem
 
 # Create var directory and set permissions
 RUN mkdir -p var && \
