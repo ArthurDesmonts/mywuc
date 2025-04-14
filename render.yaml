@@ -13,8 +13,6 @@ services:
         fromDatabase:
           name: postgres-mywuc
           property: connectionString
-      - key: JWT_SECRET_KEY
-        sync: false
       - key: JWT_PUBLIC_KEY
         sync: false
       - key: JWT_PASSPHRASE
