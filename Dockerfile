@@ -53,11 +53,6 @@ RUN mkdir -p config/jwt && \
     echo "$JWT_PRIVATE_KEY" > config/jwt/private.pem && \
     echo "$JWT_PUBLIC_KEY" > config/jwt/public.pem
 
-# Run Symfony scripts manually (composer scripts nécessitent .env et les clés JWT)
-RUN php bin/console cache:clear --env=prod && \
-    php bin/console cache:warmup --env=prod && \
-    php bin/console doctrine:migrations:migrate --no-interaction
-
 # Set permissions
 RUN mkdir -p var && \
     chown -R www-data:www-data var/ && \
