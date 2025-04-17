@@ -16,6 +16,12 @@ services:
           property: connectionString
       - key: CORS_ALLOW_ORIGIN
         value: '^https?://(localhost|127\.0\.0\.1|arthurdesmonts\.github\.io)(:[0-9]+)?$'
+      - key: JWT_SECRET_KEY
+        value: '%kernel.project_dir%/config/jwt/private.pem'
+      - key: JWT_PUBLIC_KEY
+        value: '%kernel.project_dir%/config/jwt/public.pem'
+      - key: JWT_PASSPHRASE
+        value: ''
     dependencies:
       - name: postgres-mywuc
         type: postgresql
