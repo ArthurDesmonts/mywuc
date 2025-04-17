@@ -51,11 +51,14 @@ RUN mv .env.prod .env
 # Install PHP dependencies after copying all files
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
-# 🔐 Génération des clés JWT dynamiquement (sans passphrase)
+# 🔐 Génération des clés JWT dynamiquement
 RUN mkdir -p config/jwt && \
-    openssl genrsa -out config/jwt/private.pem 4096 && \
-    openssl rsa -pubout -in config/jwt/private.pem -out config/jwt/public.pem && \
-    chmod 600 config/jwt/private.pem config/jwt/public.pem
+    openssl genpkey -out config/jwt/private.pem -aes256 -algorithm rsa -pkeyopt rsa_keygen_bits:4096 -pass pass: && \
+    openssl pkey -in config/jwt/private.pem -out config/jwt/private.pem -passin pass: && \
+    openssl pkey -in config/jwt/private.pem -pubout -out config/jwt/public.pem && \
+    chown -R www-data:www-data config/jwt && \
+    chmod 644 config/jwt/public.pem && \
+    chmod 600 config/jwt/private.pem
 
 # Set permissions
 RUN mkdir -p var && \
