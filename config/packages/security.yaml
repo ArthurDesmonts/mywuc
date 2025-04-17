@@ -31,11 +31,14 @@ security:
         main:
             lazy: true
             provider: app_user_provider
+            pattern: ^/api
+            stateless: true
+            jwt: ~
 
     access_control:
         - { path: ^/api/user/create, roles: PUBLIC_ACCESS }
         - { path: ^/api/user/login, roles: PUBLIC_ACCESS }
-        - { path: ^/api/user, roles: PUBLIC_ACCESS }
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
     security:
