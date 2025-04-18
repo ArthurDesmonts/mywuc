@@ -51,15 +51,15 @@ RUN mv .env.prod .env
 # Install PHP dependencies after copying all files
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
-# 🔐 Génération des clés JWT
+# 🔐 Recréer les fichiers de clés JWT à partir des env vars
 RUN mkdir -p config/jwt && \
-    openssl genrsa -out config/jwt/private.pem 4096 && \
-    openssl rsa -in config/jwt/private.pem -pubout -out config/jwt/public.pem && \
-    chown -R www-data:www-data config/jwt && \
+    echo "$JWT_PRIVATE_KEY_BASE64" | base64 -d > config/jwt/private.pem && \
+    echo "$JWT_PUBLIC_KEY_BASE64" | base64 -d > config/jwt/public.pem && \
+    chmod 600 config/jwt/private.pem && \
     chmod 644 config/jwt/public.pem && \
-    chmod 600 config/jwt/private.pem
+    chown -R www-data:www-data config/jwt
 
-# Set permissions
+# Set permissions for var/
 RUN mkdir -p var && \
     chown -R www-data:www-data var/ && \
     chmod -R 777 var/
